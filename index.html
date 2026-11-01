@@ -703,6 +703,26 @@ function persist() {
   }
 }
 
+// A scan can only be legitimately "Running" while its own fetch is still in
+// flight in this exact page. Anything still marked Running when data is
+// loaded — on page load, or synced in from the cloud — was abandoned (the
+// tab was closed or reloaded) and is never coming back, so mark it failed
+// instead of leaving it stuck forever. The 2-minute cutoff keeps this from
+// touching a scan another open tab/device genuinely started moments ago.
+function reapStaleScans() {
+  const STALE_MS = 2 * 60 * 1000;
+  const now = Date.now();
+  let changed = false;
+  scans.forEach(s => {
+    if (s.status === 'Running' && (!s.ts || now - s.ts > STALE_MS)) {
+      s.status = 'Failed';
+      s.result = 'Interrupted — the page was closed or reloaded before this scan finished. Try again.';
+      changed = true;
+    }
+  });
+  return changed;
+}
+
 function escapeHTML(value) {
   return String(value).replace(/[&<>"']/g, char => ({
     '&': '&amp;',
@@ -933,9 +953,10 @@ function render() {
   targetTable.innerHTML = targets.length
     ? targets.map(t => {
         const lastScan = t.lastScanId ? scans.find(s => s.id === t.lastScanId) : null;
+        const scanning = !!(lastScan && lastScan.status === 'Running');
         let resultCell = '<span class="badge info">Not yet scanned</span>';
         if (lastScan) {
-          if (lastScan.status === 'Running') resultCell = '<span class="badge info">Running…</span>';
+          if (scanning) resultCell = '<span class="badge info">Running…</span>';
           else if (lastScan.status === 'Failed') resultCell = '<span class="badge bad">Failed</span>';
           else resultCell = '<span class="badge ' + gradeTone(lastScan.grade) + '">' + escapeHTML(lastScan.result) + '</span>';
         }
@@ -945,7 +966,7 @@ function render() {
         <td>${escapeHTML(t.date)}</td>
         <td>${resultCell}</td>
         <td class="row-actions">
-          <button class="small" onclick="runScan('${t.id}', this)">Run Scan</button>
+          <button class="small" onclick="runScan('${t.id}')" ${scanning ? 'disabled' : ''}>${scanning ? 'Scanning…' : 'Run Scan'}</button>
           <button class="secondary small danger" onclick="removeTarget('${t.id}')">Remove</button>
         </td>
       </tr>
@@ -1106,6 +1127,7 @@ async function initFirebase() {
         scans = load(S_KEY, []);
         loadSettings();
         updateCloudUI();
+        if (reapStaleScans()) save(S_KEY, scans);
         render();
         return;
       }
@@ -1131,6 +1153,7 @@ async function initFirebase() {
         document.getElementById('wsNameTop').textContent = wsName;
         document.getElementById('wsNameInput').value = wsName;
         updateCloudUI();
+        if (reapStaleScans()) persist();   // clean up any scan abandoned by a closed/reloaded tab
         render();
       }, (err) => {
         console.error('Sync listener error', err);
@@ -1145,6 +1168,7 @@ async function initFirebase() {
 }
 
 loadSettings();
+if (reapStaleScans()) save(S_KEY, scans);
 render();
 updateCloudUI();
 initFirebase();
