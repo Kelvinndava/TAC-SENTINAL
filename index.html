@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TAC SENTINEL | Security Platform</title>
+
+<style>
+:root {
+  --bg: #080d16;
+  --panel: #101927;
+  --panel2: #162235;
+  --border: #25354b;
+  --text: #edf3fb;
+  --muted: #8fa2ba;
+  --accent: #00d4a6;
+  --blue: #3987ff;
+  --red: #ff5364;
+  --yellow: #f4bd50;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.app {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 245px;
+  background: #0b1320;
+  border-right: 1px solid var(--border);
+  padding: 25px 18px;
+  position: fixed;
+  height: 100vh;
+}
+
+.logo {
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  margin-bottom: 45px;
+}
+
+.logo span { color: var(--accent); }
+
+.nav-label {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  margin: 25px 10px 12px;
+  letter-spacing: 1px;
+}
+
+.nav-item {
+  padding: 13px;
+  border-radius: 8px;
+  color: var(--muted);
+  cursor: pointer;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.nav-item:hover, .nav-item.active {
+  background: #17283a;
+  color: var(--accent);
+}
+
+.main {
+  margin-left: 245px;
+  width: calc(100% - 245px);
+  padding: 28px 35px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 35px;
+  gap: 15px;
+}
+
+.topbar h1 { font-size: 24px; margin: 0; }
+
+.account {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.status {
+  display: inline-block;
+  color: var(--accent);
+  background: #07372f;
+  padding: 7px 11px;
+  border-radius: 20px;
+  font-size: 11px;
+  margin-left: 10px;
+}
+
+.welcome {
+  margin-bottom: 25px;
+}
+
+.welcome h2 {
+  margin: 0 0 8px;
+  font-size: 26px;
+}
+
+.welcome p, .muted { color: var(--muted); }
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 25px;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 21px;
+}
+
+.stat-title {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.stat-number {
+  font-size: 30px;
+  font-weight: 700;
+  margin-top: 13px;
+}
+
+.stat-note {
+  color: var(--accent);
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+.section {
+  display: none;
+}
+
+.section.active { display: block; }
+
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  gap: 12px;
+}
+
+.section-heading h2 { font-size: 19px; }
+
+button {
+  border: none;
+  padding: 12px 17px;
+  border-radius: 7px;
+  background: var(--accent);
+  color: #041510;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+button:hover { opacity: .85; }
+button:disabled { opacity: .5; cursor: default; }
+
+button.secondary {
+  background: var(--panel2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+button.danger {
+  background: #421c29;
+  color: #ff8490;
+}
+
+button.small {
+  padding: 8px 12px;
+  font-size: 12px;
+}
+
+.row-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.table-wrap { overflow-x: auto; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 550px;
+}
+
+th, td {
+  padding: 15px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  vertical-align: middle;
+}
+
+th {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.badge {
+  padding: 6px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.good { color: var(--accent); background: #07372f; }
+.warning { color: var(--yellow); background: #3c3018; }
+.bad { color: var(--red); background: #421c29; }
+.info { color: var(--blue); background: #112542; }
+
+.grid-two {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 18px;
+  margin-top: 20px;
+}
+
+form {
+  display: grid;
+  gap: 15px;
+  max-width: 650px;
+}
+
+label {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+input, select {
+  width: 100%;
+  padding: 13px;
+  background: #0a1422;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 7px;
+  margin-top: 7px;
+  font-size: 14px;
+}
+
+.notice {
+  border: 1px solid #755d2a;
+  background: #302716;
+  color: #f4d58e;
+  padding: 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.notice.info-box {
+  border-color: #244163;
+  background: #0f1c30;
+  color: #a9c6ef;
+}
+
+.plan {
+  border: 1px solid var(--accent);
+  background: #0d211f;
+}
+
+.plan-price {
+  font-size: 32px;
+  font-weight: bold;
+  margin: 15px 0;
+}
+
+.plan ul {
+  color: var(--muted);
+  line-height: 2;
+  padding-left: 20px;
+}
+
+.empty {
+  color: var(--muted);
+  padding: 25px 0;
+  font-size: 13px;
+}
+
+.activity-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  gap: 10px;
+}
+.activity-row:last-child { border-bottom: none; }
+.activity-dom { font-weight: 600; }
+.activity-when { color: var(--muted); font-size: 11px; }
+
+.grade-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 12px;
+}
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  max-width: 320px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.4);
+  z-index: 50;
+}
+.toast.err { border-color: #5b2a35; color: #ff8490; }
+
+.auth-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.auth-overlay[hidden] { display: none; }
+.auth-card {
+  width: min(380px, 100%);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px 24px;
+}
+.auth-tabs { display: flex; gap: 8px; margin-bottom: 18px; }
+.auth-tab {
+  flex: 1; text-align: center; padding: 10px; border-radius: 7px; cursor: pointer;
+  font-size: 13px; font-weight: 700; color: var(--muted); background: var(--panel2);
+  border: 1px solid var(--border);
+}
+.auth-tab.on { color: #041510; background: var(--accent); border-color: var(--accent); }
+.auth-err { color: #ff8490; font-size: 12px; min-height: 1.2em; }
+.auth-link { background: none; border: none; color: var(--blue); font-size: 12px; cursor: pointer; padding: 0; text-align: left; }
+.auth-note { color: var(--muted); font-size: 11px; line-height: 1.5; margin-top: 16px; border-top: 1px solid var(--border); padding-top: 12px; }
+.acct-email { color: var(--text); font-weight: 600; }
+.cloud-pill { font-size: 10px; padding: 4px 8px; }
+
+@media(max-width: 950px) {
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .grid-two { grid-template-columns: 1fr; }
+}
+
+@media(max-width: 650px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    padding: 15px;
+  }
+
+  .app { display: block; }
+
+  .logo { margin-bottom: 15px; }
+
+  .nav-label { display: none; }
+
+  .nav-item {
+    display: inline-block;
+    padding: 9px;
+    font-size: 12px;
+  }
+
+  .main {
+    margin: 0;
+    width: 100%;
+    padding: 20px 15px;
+  }
+
+  .stats { grid-template-columns: 1fr 1fr; }
+  .stat-number { font-size: 24px; }
+  .topbar { align-items: flex-start; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="auth-overlay" id="authOverlay" hidden>
+  <div class="auth-card">
+    <div class="logo" style="margin-bottom:20px">TAC <span>SENTINEL</span></div>
+    <div class="auth-tabs">
+      <div class="auth-tab on" id="tabSignin" onclick="setAuthTab('signin')">Sign In</div>
+      <div class="auth-tab" id="tabSignup" onclick="setAuthTab('signup')">Create Account</div>
+    </div>
+    <form id="authForm">
+      <label>Email<input id="authEmail" type="email" required autocomplete="email"></label>
+      <br>
+      <label>Password<input id="authPassword" type="password" required autocomplete="current-password" minlength="6"></label>
+      <br>
+      <div class="auth-err" id="authErr" role="alert"></div>
+      <button type="submit" id="authSubmit" style="width:100%">Sign In</button>
+    </form>
+    <br>
+    <button type="button" class="auth-link" id="authForgot" onclick="doResetPassword()">Forgot your password?</button>
+    <div class="auth-note">Your targets and scan history are tied to this account and sync across any device you sign in on. Email/password only — no payment details are collected here.</div>
+  </div>
+</div>
+
+<div class="app">
+
+<aside class="sidebar">
+  <div class="logo">TAC <span>SENTINEL</span></div>
+
+  <div class="nav-label">Workspace</div>
+  <div class="nav-item active" data-section="overview" onclick="showSection('overview',this)">▦ Overview</div>
+  <div class="nav-item" data-section="targets" onclick="showSection('targets',this)">◎ My Targets</div>
+  <div class="nav-item" data-section="newscan" onclick="showSection('newscan',this)">⌕ New Scan</div>
+  <div class="nav-item" data-section="history" onclick="showSection('history',this)">◷ Scan History</div>
+
+  <div class="nav-label">Account</div>
+  <div class="nav-item" data-section="subscription" onclick="showSection('subscription',this)">◇ Subscription</div>
+  <div class="nav-item" data-section="settings" onclick="showSection('settings',this)">⚙ Settings</div>
+</aside>
+
+<main class="main">
+
+<header class="topbar">
+  <h1>Security Workspace</h1>
+  <div class="account">
+    Workspace: <span id="wsNameTop">My Organisation</span>
+    <span class="acct-email" id="acctEmail"></span>
+    <span class="status" id="cloudStatus">● LOCAL ONLY</span>
+    <button class="secondary small" id="signOutBtn" onclick="doSignOut()" hidden>Sign out</button>
+  </div>
+</header>
+
+<!-- OVERVIEW -->
+<section id="overview" class="section active">
+
+<div class="welcome">
+  <h2>Security Overview</h2>
+  <p>Monitor your registered websites and security assessment activity.</p>
+</div>
+
+<div class="stats">
+  <div class="card">
+    <div class="stat-title">Registered Targets</div>
+    <div class="stat-number" id="targetCount">0</div>
+    <div class="stat-note">Your monitored websites</div>
+  </div>
+
+  <div class="card">
+    <div class="stat-title">Total Scans</div>
+    <div class="stat-number" id="scanCount">0</div>
+    <div class="stat-note">Assessment history</div>
+  </div>
+
+  <div class="card">
+    <div class="stat-title">Completed Scans</div>
+    <div class="stat-number" id="completedCount">0</div>
+    <div class="stat-note">Successfully completed</div>
+  </div>
+
+  <div class="card">
+    <div class="stat-title">Average Grade</div>
+    <div class="stat-number" id="avgGrade">—</div>
+    <div class="stat-note">Across completed scans</div>
+  </div>
+</div>
+
+<div class="grid-two">
+  <div class="card">
+    <div class="section-heading">
+      <h2>Recent Activity</h2>
+      <button class="secondary" onclick="showSection('history')">View All</button>
+    </div>
+    <div id="recentActivity" class="empty">No scans have been recorded yet.</div>
+  </div>
+
+  <div class="card">
+    <h2>Security Status</h2>
+    <p class="muted" id="statusSummary">Your workspace is ready for configuration.</p>
+    <p><span class="badge warning" id="statusBadge">Awaiting target verification</span></p>
+    <p class="muted">Register a domain, then run an assessment against it from My Targets.</p>
+  </div>
+</div>
+</section>
+
+<!-- TARGETS -->
+<section id="targets" class="section">
+  <div class="section-heading">
+    <h2>My Targets</h2>
+    <button onclick="showSection('newscan')">+ Add Target</button>
+  </div>
+
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Website</th>
+            <th>Added</th>
+            <th>Last Result</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="targetTable">
+          <tr><td colspan="4" class="empty">No targets registered.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- NEW SCAN -->
+<section id="newscan" class="section">
+  <div class="section-heading">
+    <h2>Register & Assess a Website</h2>
+  </div>
+
+  <div class="card">
+    <div class="notice">
+      Only register websites that you own or have explicit written permission to test.
+      Assessments here are passive and read-only: they request the site's own public page and
+      report on the HTTP security headers it sends back (via the
+      <a href="https://developer.mozilla.org/en-US/observatory" target="_blank" rel="noopener" style="color:#f4d58e">Mozilla HTTP Observatory</a>).
+      Nothing here probes ports, submits forms, or attempts to find or exploit a vulnerability.
+    </div>
+
+    <br>
+
+    <form id="targetForm">
+      <label>
+        Website URL
+        <input id="website" type="url" placeholder="https://example.com" required>
+      </label>
+
+      <label>
+        Authorisation confirmation
+        <select id="authorisation" required>
+          <option value="">Select confirmation</option>
+          <option value="yes">I own this website or have written permission</option>
+        </select>
+      </label>
+
+      <button type="submit">Register Target</button>
+    </form>
+
+    <p class="muted" id="formMessage"></p>
+  </div>
+</section>
+
+<!-- HISTORY -->
+<section id="history" class="section">
+  <div class="section-heading">
+    <h2>Scan History</h2>
+    <button class="secondary small" id="clearHistoryBtn" onclick="clearHistory()">Clear History</button>
+  </div>
+
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Target</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Result</th>
+          </tr>
+        </thead>
+        <tbody id="historyTable">
+          <tr><td colspan="4" class="empty">No scan history available.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- SUBSCRIPTION -->
+<section id="subscription" class="section">
+  <div class="section-heading">
+    <h2>Subscription & Billing</h2>
+  </div>
+
+  <div class="card plan">
+    <span class="badge good">STARTER PLAN</span>
+    <h2>TAC SENTINEL Starter</h2>
+    <div class="plan-price">R299 <small style="font-size:13px">/ month (example)</small></div>
+    <ul>
+      <li>Up to 10 registered targets</li>
+      <li>50 scans per month</li>
+      <li>Security assessment history</li>
+      <li>Downloadable reports (backend integration required)</li>
+      <li>Workspace access</li>
+    </ul>
+    <button onclick="alert('Billing integration is not connected yet.')">Manage Subscription</button>
+  </div>
+</section>
+
+<!-- SETTINGS -->
+<section id="settings" class="section">
+  <div class="section-heading">
+    <h2>Workspace Settings</h2>
+  </div>
+
+  <div class="card" id="cloudCard">
+    <h3>Account & Sync</h3>
+    <p class="muted" id="cloudExplain">This device isn't connected to an account yet, so targets and history are saved only in this browser.</p>
+  </div>
+
+  <br>
+
+  <div class="card">
+    <h3>Organisation</h3>
+    <label>
+      Workspace Name
+      <input id="wsNameInput" value="My Organisation">
+    </label>
+    <br><br>
+    <button onclick="saveSettings()">Save Settings</button>
+    <br><br>
+    <p class="muted">Account authentication, team management and audit logs are not part of this demo. This workspace's data is saved only in this browser (localStorage), on this device.</p>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+// ============================================================
+// Storage: local-only (this browser) until signed in, then synced to Firestore
+// per account, so the same workspace follows you across devices.
+// ============================================================
+const T_KEY = 'tacsentinel_targets_v1';
+const S_KEY = 'tacsentinel_scans_v1';
+const WS_KEY = 'tacsentinel_workspace_v1';
+
+function load(key, fallback) {
+  try { const v = JSON.parse(localStorage.getItem(key)); return Array.isArray(v) ? v : fallback; }
+  catch (e) { return fallback; }
+}
+function save(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
+}
+
+let targets = load(T_KEY, []);
+let scans = load(S_KEY, []);
+let wsName = 'My Organisation';
+
+// ---- Fill this in with your own Firebase project (Project settings > General
+// > Your apps > SDK setup) to turn on accounts and cross-device sync. Until
+// then the app runs local-only, exactly as before, with no account required.
+// In the Firebase console: enable the Email/Password sign-in provider under
+// Authentication, and set these Firestore rules so a user can only read and
+// write their own workspace document:
+//   match /workspaces/{uid} { allow read, write: if request.auth != null && request.auth.uid == uid; }
+const firebaseConfig = {
+  apiKey: "AIzaSyC-TQHmaGhvtxSlkK8j7aEW7VV0jWqEvec",
+  authDomain: "orion-38953.firebaseapp.com",
+  projectId: "orion-38953",
+  storageBucket: "orion-38953.firebasestorage.app",
+  messagingSenderId: "596402144284",
+  appId: "1:596402144284:web:6836ef8a34dba73c018bd9"
+};
+const FIREBASE_CONFIGURED = firebaseConfig.apiKey !== "YOUR_API_KEY";
+
+let cloudOn = false;          // true once a user is signed in and Firestore is live
+let currentUser = null;
+let docRef = null;
+let applyingRemote = false;
+let pushQueued = false;
+
+function persist() {
+  if (cloudOn && docRef && !applyingRemote) {
+    if (pushQueued) return;
+    pushQueued = true;
+    queueMicrotask(async () => {
+      pushQueued = false;
+      try {
+        const { setDoc } = await import('https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js');
+        await setDoc(docRef, { name: wsName, targets, scans, updatedAt: Date.now() });
+      } catch (e) { console.error('Sync failed', e); toast('Could not sync to your account — changes are kept on this device for now.', true); }
+    });
+  } else {
+    save(T_KEY, targets);
+    save(S_KEY, scans);
+    save(WS_KEY, { name: wsName });
+  }
+}
+
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g, char => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  })[char]);
+}
+
+// ============================================================
+// Navigation
+// ============================================================
+function showSection(id, element) {
+  document.querySelectorAll('.section').forEach(section =>
+    section.classList.remove('active')
+  );
+  document.getElementById(id).classList.add('active');
+
+  document.querySelectorAll('.nav-item').forEach(item =>
+    item.classList.remove('active')
+  );
+  const target = element || document.querySelector('.nav-item[data-section="' + id + '"]');
+  if (target) target.classList.add('active');
+}
+
+// ============================================================
+// Register a target
+// ============================================================
+document.getElementById('targetForm').addEventListener('submit', function (e) {
+  e.preventDefault();
+
+  const url = document.getElementById('website').value.trim();
+  const authorised = document.getElementById('authorisation').value;
+  const msg = document.getElementById('formMessage');
+
+  if (authorised !== 'yes') {
+    msg.textContent = 'Please confirm you own this website or have written permission.';
+    return;
+  }
+
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'https:') {
+      msg.textContent = 'Please enter an HTTPS website address.';
+      return;
+    }
+
+    const domain = parsed.hostname;
+
+    if (targets.some(t => t.domain === domain)) {
+      msg.textContent = 'This target is already registered.';
+      return;
+    }
+
+    targets.push({
+      id: Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+      domain,
+      url: parsed.origin,
+      date: new Date().toLocaleDateString('en-ZA'),
+      lastScanId: null
+    });
+    persist();
+
+    msg.textContent = 'Target registered. You can run an assessment from My Targets.';
+    this.reset();
+    render();
+    showSection('targets');
+
+  } catch {
+    msg.textContent = 'Please enter a valid website URL.';
+  }
+});
+
+function removeTarget(id) {
+  const t = targets.find(x => x.id === id);
+  if (!t) return;
+  if (!confirm('Remove ' + t.domain + ' from your targets? Its scan history is kept under Scan History.')) return;
+  targets = targets.filter(x => x.id !== id);
+  persist();
+  render();
+}
+
+function clearHistory() {
+  if (!scans.length) return;
+  if (!confirm('Clear all scan history? This cannot be undone.')) return;
+  scans = [];
+  targets.forEach(t => { t.lastScanId = null; });
+  persist();
+  render();
+}
+
+// ============================================================
+// Assessment: passive HTTP-header check via the Mozilla HTTP Observatory.
+// This is a real, read-only, third-party scan of headers the site already
+// sends back publicly — not a port scan, login attempt, or exploit attempt.
+// It needs the browser to reach observatory-api.mdn.mozilla.net; if that
+// service is unreachable or blocks the request, the scan is marked Failed
+// rather than showing a fake result.
+// ============================================================
+const OBSERVATORY_ENDPOINT = 'https://observatory-api.mdn.mozilla.net/api/v2/scan';
+
+function gradeTone(grade) {
+  if (!grade) return 'info';
+  const g = grade[0];
+  if (g === 'A' || g === 'B') return 'good';
+  if (g === 'C' || g === 'D') return 'warning';
+  return 'bad';
+}
+
+function toast(message, isErr) {
+  const el = document.createElement('div');
+  el.className = 'toast' + (isErr ? ' err' : '');
+  el.textContent = message;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 4500);
+}
+
+async function runScan(targetId, btn) {
+  const t = targets.find(x => x.id === targetId);
+  if (!t) return;
+
+  const scan = {
+    id: Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+    targetId: t.id,
+    domain: t.domain,
+    date: new Date().toLocaleString('en-ZA'),
+    status: 'Running',
+    grade: null,
+    score: null,
+    result: 'Contacting assessment service…'
+  };
+  scans.push(scan);
+  t.lastScanId = scan.id;
+  persist();
+  render();
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Scanning…'; }
+
+  try {
+    const res = await fetch(OBSERVATORY_ENDPOINT + '?host=' + encodeURIComponent(t.domain), {
+      method: 'POST',
+      headers: { 'Accept': 'application/json' }
+    });
+    if (!res.ok) throw new Error('Service returned ' + res.status);
+    const data = await res.json();
+
+    if (data.error) throw new Error(data.error);
+
+    scan.status = 'Completed';
+    scan.grade = data.grade || null;
+    scan.score = (typeof data.score === 'number') ? data.score : null;
+    scan.result = (scan.grade ? 'Grade ' + scan.grade : 'Scored') +
+      (scan.score != null ? ' (' + scan.score + '/100)' : '') +
+      (data.tests_failed != null ? ' · ' + data.tests_failed + ' header check(s) failed' : '');
+  } catch (err) {
+    scan.status = 'Failed';
+    scan.result = 'Could not complete: ' + (err && err.message ? err.message : 'the assessment service was unreachable from this browser.');
+  }
+
+  persist();
+  render();
+  if (btn) { btn.disabled = false; btn.textContent = 'Run Scan'; }
+  if (scan.status === 'Failed') toast(t.domain + ': ' + scan.result, true);
+  else toast(t.domain + ': scan complete — ' + scan.result);
+}
+
+// ============================================================
+// Settings
+// ============================================================
+function loadSettings() {
+  if (!cloudOn) {
+    const ws = (() => { try { return JSON.parse(localStorage.getItem(WS_KEY)); } catch (e) { return null; } })();
+    wsName = (ws && ws.name) ? ws.name : 'My Organisation';
+  }
+  document.getElementById('wsNameTop').textContent = wsName;
+  document.getElementById('wsNameInput').value = wsName;
+}
+function saveSettings() {
+  wsName = document.getElementById('wsNameInput').value.trim() || 'My Organisation';
+  document.getElementById('wsNameTop').textContent = wsName;
+  persist();
+  toast('Workspace settings saved.');
+}
+
+// ============================================================
+// Render
+// ============================================================
+function render() {
+  document.getElementById('targetCount').textContent = targets.length;
+  document.getElementById('scanCount').textContent = scans.length;
+  const completed = scans.filter(s => s.status === 'Completed');
+  document.getElementById('completedCount').textContent = completed.length;
+
+  const graded = completed.filter(s => typeof s.score === 'number');
+  document.getElementById('avgGrade').textContent = graded.length
+    ? Math.round(graded.reduce((sum, s) => sum + s.score, 0) / graded.length) + '/100'
+    : '—';
+
+  const statusBadge = document.getElementById('statusBadge');
+  const statusSummary = document.getElementById('statusSummary');
+  if (!targets.length) {
+    statusBadge.className = 'badge warning';
+    statusBadge.textContent = 'Awaiting target verification';
+    statusSummary.textContent = 'Your workspace is ready for configuration.';
+  } else if (!completed.length) {
+    statusBadge.className = 'badge info';
+    statusBadge.textContent = targets.length + ' target(s) registered, no scans yet';
+    statusSummary.textContent = 'Run an assessment from My Targets to see results here.';
+  } else {
+    statusBadge.className = 'badge good';
+    statusBadge.textContent = completed.length + ' completed assessment(s)';
+    statusSummary.textContent = 'Latest: ' + completed[completed.length - 1].domain + ' — ' + completed[completed.length - 1].result;
+  }
+
+  // Targets table
+  const targetTable = document.getElementById('targetTable');
+  targetTable.innerHTML = targets.length
+    ? targets.map(t => {
+        const lastScan = t.lastScanId ? scans.find(s => s.id === t.lastScanId) : null;
+        let resultCell = '<span class="badge info">Not yet scanned</span>';
+        if (lastScan) {
+          if (lastScan.status === 'Running') resultCell = '<span class="badge info">Running…</span>';
+          else if (lastScan.status === 'Failed') resultCell = '<span class="badge bad">Failed</span>';
+          else resultCell = '<span class="badge ' + gradeTone(lastScan.grade) + '">' + escapeHTML(lastScan.result) + '</span>';
+        }
+        return `
+      <tr>
+        <td>${escapeHTML(t.domain)}</td>
+        <td>${escapeHTML(t.date)}</td>
+        <td>${resultCell}</td>
+        <td class="row-actions">
+          <button class="small" onclick="runScan('${t.id}', this)">Run Scan</button>
+          <button class="secondary small danger" onclick="removeTarget('${t.id}')">Remove</button>
+        </td>
+      </tr>
+    `;
+      }).join('')
+    : '<tr><td colspan="4" class="empty">No targets registered.</td></tr>';
+
+  // History table (most recent first)
+  const historyTable = document.getElementById('historyTable');
+  const sortedScans = scans.slice().reverse();
+  historyTable.innerHTML = sortedScans.length
+    ? sortedScans.map(s => {
+        const statusCls = s.status === 'Completed' ? 'good' : s.status === 'Failed' ? 'bad' : 'info';
+        return `
+      <tr>
+        <td>${escapeHTML(s.domain)}</td>
+        <td>${escapeHTML(s.date)}</td>
+        <td><span class="badge ${statusCls}">${escapeHTML(s.status)}</span></td>
+        <td>${escapeHTML(s.result || '')}</td>
+      </tr>
+    `;
+      }).join('')
+    : '<tr><td colspan="4" class="empty">No scan history available.</td></tr>';
+
+  // Recent activity (overview)
+  const recent = document.getElementById('recentActivity');
+  if (!sortedScans.length) {
+    recent.className = 'empty';
+    recent.textContent = 'No scans have been recorded yet.';
+  } else {
+    recent.className = '';
+    recent.innerHTML = sortedScans.slice(0, 5).map(s => {
+      const statusCls = s.status === 'Completed' ? 'good' : s.status === 'Failed' ? 'bad' : 'info';
+      return `<div class="activity-row">
+        <div><div class="activity-dom">${escapeHTML(s.domain)}</div><div class="activity-when">${escapeHTML(s.date)}</div></div>
+        <span class="badge ${statusCls}">${escapeHTML(s.status === 'Completed' ? s.result : s.status)}</span>
+      </div>`;
+    }).join('');
+  }
+}
+
+// ============================================================
+// Auth + cloud sync
+// ============================================================
+let authMode = 'signin';
+function setAuthTab(mode) {
+  authMode = mode;
+  document.getElementById('tabSignin').classList.toggle('on', mode === 'signin');
+  document.getElementById('tabSignup').classList.toggle('on', mode === 'signup');
+  document.getElementById('authSubmit').textContent = mode === 'signin' ? 'Sign In' : 'Create Account';
+  document.getElementById('authErr').textContent = '';
+}
+
+const AUTH_MESSAGES = {
+  'auth/invalid-email': 'That email address looks invalid.',
+  'auth/missing-password': 'Enter a password.',
+  'auth/weak-password': 'Use at least 6 characters.',
+  'auth/email-already-in-use': 'An account already exists for that email — try signing in instead.',
+  'auth/invalid-credential': 'Wrong email or password.',
+  'auth/wrong-password': 'Wrong email or password.',
+  'auth/user-not-found': 'Wrong email or password.',
+  'auth/too-many-requests': 'Too many attempts. Wait a bit and try again.'
+};
+function authErrText(e) { return AUTH_MESSAGES[e && e.code] || 'Something went wrong. Please try again.'; }
+
+function updateCloudUI() {
+  const statusEl = document.getElementById('cloudStatus');
+  const emailEl = document.getElementById('acctEmail');
+  const signOutBtn = document.getElementById('signOutBtn');
+  const cloudCard = document.getElementById('cloudCard');
+  const cloudExplain = document.getElementById('cloudExplain');
+
+  if (!FIREBASE_CONFIGURED) {
+    statusEl.textContent = '● LOCAL ONLY';
+    emailEl.textContent = '';
+    signOutBtn.hidden = true;
+    cloudExplain.innerHTML = 'Accounts aren\'t set up for this deployment yet, so everything here is saved only in this browser. Add a Firebase project\'s config near the top of the script to turn on accounts and cross-device sync.';
+    return;
+  }
+  if (cloudOn && currentUser) {
+    statusEl.textContent = '● SYNCED';
+    emailEl.textContent = currentUser.email;
+    signOutBtn.hidden = false;
+    cloudExplain.textContent = 'Signed in as ' + currentUser.email + '. Targets and scan history sync to your account and follow you to any device you sign in on.';
+  } else {
+    statusEl.textContent = '● LOCAL ONLY';
+    emailEl.textContent = '';
+    signOutBtn.hidden = true;
+    cloudExplain.textContent = 'Not signed in — saving to this device only.';
+  }
+}
+
+async function initFirebase() {
+  if (!FIREBASE_CONFIGURED) { updateCloudUI(); return; }
+  try {
+    const [{ initializeApp }, authMod, fsMod] = await Promise.all([
+      import('https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js'),
+      import('https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js'),
+      import('https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js')
+    ]);
+    const app = initializeApp(firebaseConfig);
+    const auth = authMod.getAuth(app);
+    const db = fsMod.initializeFirestore(app, {
+      localCache: fsMod.persistentLocalCache({ tabManager: fsMod.persistentMultipleTabManager() })
+    });
+
+    document.getElementById('authForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPassword').value;
+      const errEl = document.getElementById('authErr');
+      const btn = document.getElementById('authSubmit');
+      errEl.textContent = '';
+      btn.disabled = true;
+      try {
+        if (authMode === 'signup') await authMod.createUserWithEmailAndPassword(auth, email, password);
+        else await authMod.signInWithEmailAndPassword(auth, email, password);
+      } catch (err) {
+        errEl.textContent = authErrText(err);
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    window.doResetPassword = async function () {
+      const email = document.getElementById('authEmail').value.trim();
+      const errEl = document.getElementById('authErr');
+      if (!email) { errEl.textContent = 'Enter your email above first, then click this again.'; return; }
+      try {
+        await authMod.sendPasswordResetEmail(auth, email);
+        errEl.style.color = 'var(--accent)';
+        errEl.textContent = 'Password reset email sent.';
+      } catch (err) {
+        errEl.style.color = '';
+        errEl.textContent = authErrText(err);
+      }
+    };
+
+    window.doSignOut = async function () {
+      if (docRef) { try { const { } = fsMod; } catch (e) {} docRef = null; }
+      cloudOn = false;
+      await authMod.signOut(auth);
+    };
+
+    authMod.onAuthStateChanged(auth, async (user) => {
+      currentUser = user;
+      const overlay = document.getElementById('authOverlay');
+
+      if (!user) {
+        cloudOn = false;
+        docRef = null;
+        overlay.hidden = false;
+        document.getElementById('authEmail').value = '';
+        document.getElementById('authPassword').value = '';
+        document.getElementById('authErr').textContent = '';
+        // Fall back to whatever is saved locally on this device.
+        targets = load(T_KEY, []);
+        scans = load(S_KEY, []);
+        loadSettings();
+        updateCloudUI();
+        render();
+        return;
+      }
+
+      overlay.hidden = true;
+      docRef = fsMod.doc(db, 'workspaces', user.uid);
+
+      fsMod.onSnapshot(docRef, async (snap) => {
+        applyingRemote = true;
+        if (snap.exists()) {
+          const data = snap.data();
+          targets = Array.isArray(data.targets) ? data.targets : [];
+          scans = Array.isArray(data.scans) ? data.scans : [];
+          wsName = data.name || 'My Organisation';
+        } else {
+          // First time this account has signed in: carry over anything already
+          // on this device instead of discarding it.
+          wsName = (() => { try { const w = JSON.parse(localStorage.getItem(WS_KEY)); return (w && w.name) || 'My Organisation'; } catch (e) { return 'My Organisation'; } })();
+          try { await fsMod.setDoc(docRef, { name: wsName, targets, scans, updatedAt: Date.now() }); } catch (e) {}
+        }
+        cloudOn = true;
+        applyingRemote = false;
+        document.getElementById('wsNameTop').textContent = wsName;
+        document.getElementById('wsNameInput').value = wsName;
+        updateCloudUI();
+        render();
+      }, (err) => {
+        console.error('Sync listener error', err);
+        toast('Lost connection to your account — showing the last synced copy.', true);
+      });
+    });
+  } catch (e) {
+    console.error('Firebase init failed', e);
+    toast('Could not connect to the account service — running local-only.', true);
+    updateCloudUI();
+  }
+}
+
+loadSettings();
+render();
+updateCloudUI();
+initFirebase();
+</script>
+
+</body>
+</html>
