@@ -843,10 +843,18 @@ async function runScan(targetId, btn) {
   if (btn) { btn.disabled = true; btn.textContent = 'Scanning…'; }
 
   try {
-    const res = await fetch(OBSERVATORY_ENDPOINT + '?host=' + encodeURIComponent(t.domain), {
-      method: 'POST',
-      headers: { 'Accept': 'application/json' }
-    });
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 25000);  // don't let a stuck request spin forever
+    let res;
+    try {
+      res = await fetch(OBSERVATORY_ENDPOINT + '?host=' + encodeURIComponent(t.domain), {
+        method: 'POST',
+        headers: { 'Accept': 'application/json' },
+        signal: controller.signal
+      });
+    } finally {
+      clearTimeout(timer);
+    }
     if (!res.ok) throw new Error('Service returned ' + res.status);
     const data = await res.json();
 
@@ -860,7 +868,9 @@ async function runScan(targetId, btn) {
       (data.tests_failed != null ? ' · ' + data.tests_failed + ' header check(s) failed' : '');
   } catch (err) {
     scan.status = 'Failed';
-    scan.result = 'Could not complete: ' + (err && err.message ? err.message : 'the assessment service was unreachable from this browser.');
+    scan.result = (err && err.name === 'AbortError')
+      ? 'Timed out after 25s — the assessment service took too long to respond.'
+      : 'Could not complete: ' + (err && err.message ? err.message : 'the assessment service was unreachable from this browser.');
   }
 
   persist();
