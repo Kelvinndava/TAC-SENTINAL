@@ -684,7 +684,14 @@ let currentUser = null;
 let docRef = null;
 let applyingRemote = false;
 let pushQueued = false;
+const pendingDeletedTargetIds = new Set();
+const pendingDeletedScanIds = new Set();
 
+// Targets and scans are each written to their OWN field path (targets.<id>,
+// scans.<id>) rather than as one big array. If you have this workspace open
+// in two tabs at once, each save then only touches the items that actually
+// changed in that tab — one tab finishing a scan can no longer silently
+// overwrite another tab's unrelated, still-in-progress work.
 function persist() {
   if (cloudOn && docRef && !applyingRemote) {
     if (pushQueued) return;
@@ -692,8 +699,25 @@ function persist() {
     queueMicrotask(async () => {
       pushQueued = false;
       try {
-        const { setDoc } = await import('https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js');
-        await setDoc(docRef, { name: wsName, targets, scans, updatedAt: Date.now() });
+        const { updateDoc, setDoc, deleteField } = await import('https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js');
+        const fields = { name: wsName, updatedAt: Date.now() };
+        targets.forEach(t => { fields['targets.' + t.id] = t; });
+        scans.forEach(s => { fields['scans.' + s.id] = s; });
+        pendingDeletedTargetIds.forEach(id => { fields['targets.' + id] = deleteField(); });
+        pendingDeletedScanIds.forEach(id => { fields['scans.' + id] = deleteField(); });
+        pendingDeletedTargetIds.clear();
+        pendingDeletedScanIds.clear();
+        try {
+          await updateDoc(docRef, fields);
+        } catch (e) {
+          // No document yet (first save on a brand-new account) — create it.
+          await setDoc(docRef, {
+            name: wsName,
+            targets: Object.fromEntries(targets.map(t => [t.id, t])),
+            scans: Object.fromEntries(scans.map(s => [s.id, s])),
+            updatedAt: Date.now()
+          }, { merge: true });
+        }
       } catch (e) { console.error('Sync failed', e); toast('Could not sync to your account — changes are kept on this device for now.', true); }
     });
   } else {
