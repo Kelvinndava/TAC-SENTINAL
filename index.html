@@ -821,15 +821,18 @@ function toast(message, isErr) {
   setTimeout(() => el.remove(), 4500);
 }
 
-async function runScan(targetId, btn) {
+async function runScan(targetId) {
   const t = targets.find(x => x.id === targetId);
   if (!t) return;
+  const already = t.lastScanId && scans.find(s => s.id === t.lastScanId);
+  if (already && already.status === 'Running') return;   // already in flight — the button is disabled for this, but guard anyway
 
   const scan = {
     id: Date.now() + '-' + Math.random().toString(36).slice(2, 7),
     targetId: t.id,
     domain: t.domain,
     date: new Date().toLocaleString('en-ZA'),
+    ts: Date.now(),
     status: 'Running',
     grade: null,
     score: null,
@@ -838,9 +841,7 @@ async function runScan(targetId, btn) {
   scans.push(scan);
   t.lastScanId = scan.id;
   persist();
-  render();
-
-  if (btn) { btn.disabled = true; btn.textContent = 'Scanning…'; }
+  render();   // the button for this target now renders disabled, driven by scan.status below
 
   try {
     const controller = new AbortController();
@@ -875,7 +876,6 @@ async function runScan(targetId, btn) {
 
   persist();
   render();
-  if (btn) { btn.disabled = false; btn.textContent = 'Run Scan'; }
   if (scan.status === 'Failed') toast(t.domain + ': ' + scan.result, true);
   else toast(t.domain + ': scan complete — ' + scan.result);
 }
